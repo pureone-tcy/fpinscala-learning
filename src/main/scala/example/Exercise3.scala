@@ -130,7 +130,7 @@ object List {
   def flatMap[A,B](as: List[A])(f: A => List[B]): List[B] =
     concat(map(as)(f))
 
-  def filter2[A](as: List[A])(f: A => Boolean): List[A] =
+  def filter2[A](as: List[A])(f: A => Boolean): List[A] = ???
 }
 
 class Creature
