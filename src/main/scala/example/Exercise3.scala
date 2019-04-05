@@ -130,7 +130,12 @@ object List {
   def flatMap[A,B](as: List[A])(f: A => List[B]): List[B] =
     concat(map(as)(f))
 
-  def filter2[A](as: List[A])(f: A => Boolean): List[A] = ???
+  def filterViaFlatMap[A](l: List[A])(f: A => Boolean): List[A] =
+    flatMap(l)(a => if (f(a)) List(a) else Nil)
+
+  //
+
+
 }
 
 class Creature
@@ -142,8 +147,14 @@ class Container[-T] {
 
 object Exercise3 {
   def main(args: Array[String]): Unit = {
+
+
+
     println(List.filter(List(1,2,3,4,5,6,7,8,9,10))((x: Int) => x % 2 != 0))
 
     println(List.flatMap(List(1,2,3,4,5))(i => List(i,i)))
+
+    println(List.filterViaFlatMap(List(1,2,3,4,5))((x: Int) => x % 2 != 0))
+
   }
 }
