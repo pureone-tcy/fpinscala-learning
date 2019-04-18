@@ -148,8 +148,6 @@ class Container[-T] {
 object Exercise3 {
   def main(args: Array[String]): Unit = {
 
-
-
     println(List.filter(List(1,2,3,4,5,6,7,8,9,10))((x: Int) => x % 2 != 0))
 
     println(List.flatMap(List(1,2,3,4,5))(i => List(i,i)))
