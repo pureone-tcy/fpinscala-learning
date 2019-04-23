@@ -115,37 +115,46 @@ object List {
   def concat[A](l: List[List[A]]): List[A] =
     foldRight(l, List[A]())(append)
 
+  // Exercise 16
   def add(l: List[Int]): List[Int] =
     foldRight(l, Nil: List[Int])((a, b) => Cons(a + 1, b))
 
+  // Exercise 17
   def doubleToString(l: List[Double]): List[String] =
     foldRight(l, Nil: List[String])((a, b) => Cons(a.toString, b))
 
+  // Exercise 18
   def map[A,B](as: List[A])(f: A => B): List[B] =
     foldRight(as, Nil: List[B])((a,b) => Cons(f(a),b))
 
+  // Exercise 19
   def filter[A](as: List[A])(f: A => Boolean): List[A] =
     foldRight(as, Nil: List[A])((a, b) => if(f(a)) Cons(a, b) else b)
 
+  // Exercise 20
   def flatMap[A,B](as: List[A])(f: A => List[B]): List[B] =
     concat(map(as)(f))
 
+  // Exercise 21
   def filterViaFlatMap[A](l: List[A])(f: A => Boolean): List[A] =
     flatMap(l)(a => if (f(a)) List(a) else Nil)
 
-  //
+  // Exercise 22
+  def addPairwise(a: List[Int], b: List[Int]): List[Int] = (a, b) match {
+    case (_, Nil) => Nil
+    case (Nil, _) => Nil
+    case (Cons(a1, a2), Cons(b1, b2)) => Cons(a1 + b1, addPairwise(a2, b2))
+  }
 
-
+  // Exercise 23
+  def zipWith[A,B,C](a: List[A], b: List[A])(f: (A, B) => C): List[C] = (a, b) match {
+    case (_, Nil) => Nil
+    case (Nil, _) => Nil
+    case (Cons(a1, a2), Cons(b1, b2)) => Cons(f(a1, b1), zipWith(a2, b2)(f))
+  }
 }
 
-class Creature
-class Animal extends Creature
-class Cat extends Animal
-class Container[-T] {
-//  def foo[A <: T](t: A): A = new A
-}
-
-object Exercise3 {
+object Exercise3_1 {
   def main(args: Array[String]): Unit = {
 
     println(List.filter(List(1,2,3,4,5,6,7,8,9,10))((x: Int) => x % 2 != 0))
@@ -153,6 +162,8 @@ object Exercise3 {
     println(List.flatMap(List(1,2,3,4,5))(i => List(i,i)))
 
     println(List.filterViaFlatMap(List(1,2,3,4,5))((x: Int) => x % 2 != 0))
+
+    println(List.zipWith(List(1,2,3,4,5), List(1,2,3,4,5))((a, b) => a + b))
 
   }
 }
