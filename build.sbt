@@ -7,7 +7,7 @@ ThisBuild / organizationName := "example"
 
 lazy val root = (project in file("."))
   .settings(
-    name := "fpinscala-sandbox",
+    name := "fpinscala-learning",
     libraryDependencies += scalaTest % Test
   )
 
