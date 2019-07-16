@@ -2,8 +2,8 @@ package example.exercise5
 
 object Exercise5 {
   def main(args: Array[String]): Unit = {
-    val s = Stream(1,2,3,4,5,6,7,8,9,10).takeWhile(_ % 2 == 0)
-    println(s.toList)
+    val s = Stream(1,2,3,4,5,6,7,8,9,10).exists2(_ % 2 == 0)
+    println(s)
   }
 }
 
@@ -13,11 +13,7 @@ trait Stream[+A] {
     case Cons(h, _) => Some(h())
   }
 
-//  def toList: List[A] = this match {
-//    case Empty => Nil
-//    case Cons(h, t) => h() :: t().toList
-//  }
-
+  // Exercise 5.1
   def toList: List[A] = {
     @annotation.tailrec
     def go(s: Stream[A], l: List[A]): List[A] = s match {
@@ -26,7 +22,12 @@ trait Stream[+A] {
     }
     go(this, List())
   }
+//  def toList: List[A] = this match {
+//    case Empty => Nil
+//    case Cons(h, t) => h() :: t().toList
+//  }
 
+  // Exercise 5.2
   def take(n: Int): Stream[A] = {
     @annotation.tailrec
     def go(n: Int, s: Stream[A], ss: Stream[A]): Stream[A] = s match {
@@ -47,6 +48,7 @@ trait Stream[+A] {
     go(n, this)
   }
 
+  // Exercise 5.3
   def takeWhile(p: A => Boolean): Stream[A] = {
     @annotation.tailrec
     def go(s: Stream[A], ss: Stream[A]): Stream[A] = s match {
@@ -58,9 +60,21 @@ trait Stream[+A] {
   }
 
   def exists(p: A => Boolean): Boolean = this match {
-    case Cons(h, t) => p(h()) || t().exists(p)
+    case Cons(h, t) => p(h( )) || t().exists(p)
     case _ => false
   }
+
+  def foldRight[B](z: => B)(f: (A, => B) => B): B = this match {
+    case Cons(h, t) => println(h()); f(h(), t().foldRight(z)(f))
+    case  _=> z
+  }
+
+  def exists2(p: A => Boolean): Boolean =
+    foldRight(false)((a, b) => p(a) || b)
+
+  // Exercise 5.4
+  def forAll(p: A => Boolean): Boolean =
+    foldRight(true)((a, b) => p(a) && b)
 
 }
 case object Empty extends Stream[Nothing]
