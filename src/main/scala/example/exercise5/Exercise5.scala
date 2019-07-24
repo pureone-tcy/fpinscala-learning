@@ -2,12 +2,12 @@ package example.exercise5
 
 object Exercise5 {
   def main(args: Array[String]): Unit = {
-//    val s = Stream(1,2,3,4,5,6,7,8,9,10).takeWhile2(_ == 5)
-//    val s = Stream(1,2,3,4,5,6,7,8,9,10).headOption2
-//    import Stream._
-    val s = Stream(1,2,3,4,5).map(_ * 2)
-//    val s = Stream(1,2,3,4,5).flatMap(a => cons(a * 2, empty))
-//    val s = Stream(1,2,3,4,5).append(Stream(6,7,8,9,10))
+    //    val s = Stream(1,2,3,4,5,6,7,8,9,10).takeWhile2(_ == 5)
+    //    val s = Stream(1,2,3,4,5,6,7,8,9,10).headOption2
+    //    import Stream._
+    val s = Stream(1, 2, 3, 4, 5).map(_ * 2)
+    //    val s = Stream(1,2,3,4,5).flatMap(a => cons(a * 2, empty))
+    //    val s = Stream(1,2,3,4,5).append(Stream(6,7,8,9,10))
 
     println(Stream().fibsViaUnfold.toList)
   }
@@ -53,6 +53,7 @@ trait Stream[+A] {
     go(n, this)
   }
 
+
   // Exercise 5-3
   def takeWhile(p: A => Boolean): Stream[A] = {
     @annotation.tailrec
@@ -65,7 +66,7 @@ trait Stream[+A] {
   }
 
   def exists(p: A => Boolean): Boolean = this match {
-    case Cons(h, t) => p(h()) || t().exists(p)
+    case Cons(h, t) => p(h( )) || t().exists(p)
     case _ => false
   }
 
@@ -102,8 +103,8 @@ trait Stream[+A] {
   def find(p: A => Boolean): Option[A] = filter(p).headOption
 
   // Exercise 5-8
-  def constant[A](a: A): Stream[A] = {
-    lazy val tail: Stream[A] = Cons(() => a, () => tail)
+  def constant[B](a: B): Stream[B] = {
+    lazy val tail: Stream[B] = Cons(() => a, () => tail)
     tail
   }
 
@@ -120,7 +121,7 @@ trait Stream[+A] {
   }
 
   // Exercise 5-11
-  def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = {
+  def unfold[B, S](z: S)(f: S => Option[(B, S)]): Stream[B] = {
     f(z) match {
       case Some((h, s)) => cons(h, unfold(s)(f))
       case None => empty
@@ -128,8 +129,7 @@ trait Stream[+A] {
   }
 
   // Exercise 5-12
-  val fibsViaUnfold =
-    unfold((0,1)) { case (f0,f1) => Some((f0,(f1,f0+f1))) }
+  val fibsViaUnfold = unfold((0,1)) { case (f0,f1) => Some((f0,(f1,f0+f1))) }
 
 }
 case object Empty extends Stream[Nothing]
@@ -147,5 +147,4 @@ object Stream {
   def apply[A](as: A*): Stream[A] =
     if(as.isEmpty) empty
     else cons(as.head, apply(as.tail: _*))
-
 }
