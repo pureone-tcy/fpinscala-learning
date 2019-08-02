@@ -92,7 +92,28 @@ case class SimpleRNG(seed: Long) extends RNG {
 
   // Exercise 6-5
   def doubleViaMap(s: Rand[Double]): Rand[Double] = {
-    map(s)(i => i / (Int.MaxValue.toDouble + 1))
+    map(s)(_ / (Int.MaxValue.toDouble + 1))
   }
+  val _double: Rand[Double] = map(nonNegativeInt)(_ / (Int.MaxValue.toDouble + 1))
+
+  // Exercise 6-6
+  def map2[A,B,C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = rng1 => {
+    val (a, rng2) = ra(rng1)
+    val (b, rng3) = rb(rng2)
+    (f(a,b), rng3)
+  }
+
+  def both[A, B](ra: Rand[A], rb: Rand[B]): Rand[(A, B)] =
+    map2(ra, rb)((_, _))
+
+  val randIntDouble: Rand[(Int, Double)] = both(int, double)
+  val randDoubleInt: Rand[(Double, Int)] = both(double, int)
+
+  // Exercise 6-7
+  def sequence[A](fs: List[Rand[A]]): Rand[List[A]] = {
+    ???
+  }
+
+
 
 }
