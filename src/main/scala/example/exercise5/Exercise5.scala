@@ -2,16 +2,10 @@ package example.exercise5
 
 object Exercise5 {
   def main(args: Array[String]): Unit = {
-//    val s = Stream(1,2,3,4,5).toList
-    val s = Stream(1,2,3,4,5,6,7,8,9,10).takeWhile2(_ == 5)
-//    val s = Stream(1,2,3,4,5,6,7,8,9,10).headOption2
-//    import Stream._
-//    val s = Stream(1, 2, 3, 4, 5).map(_ * 2)
-//    val s = Stream(1,2,3,4,5).flatMap(a => cons(a * 2, empty))
-//    val s = Stream(1,2,3,4,5).append(Stream(6,7,8,9,10))
+//    val s = Stream(1,2,3,4,5).takeWhileViaUnfold(_ < 3)
+    val s = Stream(1,2,3).startsWith(Stream(4,5,6,7))
+    println(s)
 
-//    val s = Stream(1,2,3,4,5).takeViaUnfold(3)
-    println(s.toList)
   }
 }
 
@@ -144,13 +138,13 @@ trait Stream[+A] {
   }
 
   // Exercise 5-12
-  val fibsViaUnfold = unfold((0, 1)) { case (f0, f1) => Some((f0, (f1, f0 + f1))) }
+//  val fibsViaUnfold = unfold((0, 1)) { case (f0, f1) => Some((f0, (f1, f0 + f1))) }
 
   def fromViaUnfold(n: Int): Stream[Int] = unfold(n)(n => Some((n, n + 1)))
 
-  def constantViaUnfold[A](a: A): Stream[A] = unfold(a)(_ => Some((a, a)))
+  def constantViaUnfold[B](a: B): Stream[B] = unfold(a)(_ => Some((a, a)))
 
-  val onesViaUnfold = unfold(1)(_ => Some((1, 1)))
+//  val onesViaUnfold = unfold(1)(_ => Some((1, 1)))
 
   // Exercise 5-13
   def mapViaUnfold[B](f: A => B): Stream[B] =
@@ -161,8 +155,8 @@ trait Stream[+A] {
 
   def takeViaUnfold(n: Int): Stream[A] =
     unfold((this, n)) {
-      case (Cons(h, t), 1) => Some((h(), (empty, 0)))
-      case (Cons(h, t), n) if n > 1 => Some((h(), (t(), n - 1)))
+      case (Cons(h, _), 1) => Some((h(), (empty, 0)))
+      case (Cons(h, t), nn) if nn > 1 => Some((h(), (t(), n - 1)))
       case _ => None
     }
 
@@ -193,7 +187,10 @@ trait Stream[+A] {
       case (Cons(h1, t1), Cons(h2, t2)) => Some(f(Some(h1()), Some(h2())) -> (t1() -> t2()))
     }
 
-
+  def startsWith[A](s: Stream[A]): Boolean =
+    zipAll(s).takeWhile(_._2.nonEmpty) forAll {
+      case (h, h2) => h == h2
+    }
 }
 
 case object Empty extends Stream[Nothing]
