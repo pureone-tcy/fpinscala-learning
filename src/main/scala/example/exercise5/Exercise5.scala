@@ -3,7 +3,7 @@ package example.exercise5
 object Exercise5 {
   def main(args: Array[String]): Unit = {
 //    val s = Stream(1,2,3,4,5).takeWhileViaUnfold(_ < 3)
-    val s = Stream(1,2,3).startsWith(Stream(4,5,6,7))
+    val s = Stream(1,2,3).startsWith(Stream(1,2))
     println(s)
 
   }
@@ -187,10 +187,18 @@ trait Stream[+A] {
       case (Cons(h1, t1), Cons(h2, t2)) => Some(f(Some(h1()), Some(h2())) -> (t1() -> t2()))
     }
 
+  // Exercise 5-14
   def startsWith[A](s: Stream[A]): Boolean =
     zipAll(s).takeWhile(_._2.nonEmpty) forAll {
       case (h, h2) => h == h2
     }
+
+  // Exercise 5-15
+  def tails: Stream[Stream[A]] =
+    unfold(this) {
+      case Empty => None
+      case s => Some((s, s drop 1))
+    } append Stream(empty)
 }
 
 case object Empty extends Stream[Nothing]
