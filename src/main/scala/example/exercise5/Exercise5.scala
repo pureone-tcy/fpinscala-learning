@@ -2,9 +2,11 @@ package example.exercise5
 
 object Exercise5 {
   def main(args: Array[String]): Unit = {
-//    val s = Stream(1,2,3,4,5).takeWhileViaUnfold(_ < 3)
-    val s = Stream(1,2,3).startsWith(Stream(1,2))
-    println(s)
+
+    val s = Stream(1,2,3).scanRight(0)((a, b) => a + b)
+    println(s.toList)
+
+
 
   }
 }
@@ -185,10 +187,11 @@ trait Stream[+A] {
       case (Cons(h, t), Empty) => Some(f(Some(h()), Option.empty[B]) -> (t(), empty[B]))
       case (Empty, Cons(h, t)) => Some(f(Option.empty[A], Some(h())) -> (empty[A] -> t()))
       case (Cons(h1, t1), Cons(h2, t2)) => Some(f(Some(h1()), Some(h2())) -> (t1() -> t2()))
+      case _ => None
     }
 
   // Exercise 5-14
-  def startsWith[A](s: Stream[A]): Boolean =
+  def startsWith[B](s: Stream[B]): Boolean =
     zipAll(s).takeWhile(_._2.nonEmpty) forAll {
       case (h, h2) => h == h2
     }
@@ -199,6 +202,14 @@ trait Stream[+A] {
       case Empty => None
       case s => Some((s, s drop 1))
     } append Stream(empty)
+
+  // Exercise 5-16
+  def scanRight[B](z: B)(f: (A, => B) => B): Stream[B] =
+    foldRight((z, Stream(z)))((a, p0) => {
+      lazy val p1 = p0
+      val b2 = f(a, p1._1)
+      (b2, cons(b2, p1._2))
+    })._2
 }
 
 case object Empty extends Stream[Nothing]
