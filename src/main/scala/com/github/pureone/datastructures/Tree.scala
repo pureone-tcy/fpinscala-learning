@@ -1,49 +1,42 @@
 package com.github.pureone.datastructures
 
 sealed trait Tree[+A] {
-  private val t = Tree
-  def size: Int = t.size(this)
-  def _size: Int = t._size(this)
-  def depth: Int = t.depth(this)
-  def _depth: Int = t.depth(this)
-  def map[B](f: A => B): Tree[B] = t.map(this)(f)
-  def _map[B](f: A => B): Tree[B] = t._map(this)(f)
+
+  def size: Int = this match {
+    case Leaf(_) => 1
+    case Branch(l, r) => 1 + l.size + r.size
+  }
+
+  def depth: Int = this match {
+    case Branch(l, r) => 1 + (l.depth max r.depth)
+    case Leaf(_)      => 1
+  }
+
+  def map[B](f: A => B): Tree[B] = this match {
+    case Branch(l, r) => Branch(l.map(f), r.map(f))
+    case Leaf(v)      => Leaf(f(v))
+  }
+
+  def fold[B](f: A => B)(g: (B, B) => B): B = this match {
+    case Leaf(v)      => f(v)
+    case Branch(l, r) => g(l.fold(f)(g), r.fold(f)(g))
+  }
+
+  def _size: Int = fold(_ => 1)(1 + _ + _)
+
+  def _depth: Int = fold(_ => 1)((d1, d2) => 1 + (d1 max d2))
+
+  def _map[B](f: A => B): Tree[B] =
+    fold(a => Leaf(f(a)): Tree[B])(Branch(_, _))
+
 }
 case class Leaf[A](value: A) extends Tree[A]
 case class Branch[A](left: Tree[A], right: Tree[A]) extends Tree[A]
 
 object Tree {
-  def size[A](t: Tree[A]): Int = t match {
-    case Leaf(_)      => 1
-    case Branch(l, r) => 1 + size(l) + size(r)
-  }
-
   def maximum[A](t: Tree[Int]): Int = t match {
     case Branch(l, r) => maximum(l) max maximum(r)
     case Leaf(n)      => n
   }
-
-  def depth[A](t: Tree[A]): Int = t match {
-    case Branch(l, r) => 1 + (depth(l) max depth(r))
-    case Leaf(_)      => 1
-  }
-
-  def map[A, B](t: Tree[A])(f: A => B): Tree[B] = t match {
-    case Branch(l, r) => Branch(map(l)(f), map(r)(f))
-    case Leaf(v)      => Leaf(f(v))
-  }
-
-  def fold[A, B](t: Tree[A])(f: A => B)(g: (B, B) => B): B = t match {
-    case Leaf(v)      => f(v)
-    case Branch(l, r) => g(fold(l)(f)(g), fold(r)(f)(g))
-  }
-
-  def _size[A](t: Tree[A]): Int = fold(t)(_ => 1)(1 + _ + _)
-
-  def _maximum[A](t: Tree[Int]): Int = fold(t)(a => a)(_ max _)
-
-  def _depth[A](t: Tree[A]): Int = fold(t)(_ => 1)(_ max _)
-
-  def _map[A, B](t: Tree[A])(f: A => B): Tree[B] =
-    fold(t)(a => Leaf(f(a)): Tree[B])(Branch(_, _))
+  def _maximum[A](t: Tree[Int]): Int = t.fold(a => a)(_ max _)
 }
