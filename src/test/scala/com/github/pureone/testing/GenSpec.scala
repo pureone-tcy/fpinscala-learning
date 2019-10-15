@@ -5,34 +5,46 @@ import com.github.pureone.state._
 import org.scalatest.FreeSpec
 
 class GenSpec extends FreeSpec {
-  val rng = SimpleRNG(2)
+  val rng = Simple(2)
 
-//  "choose" - {
-//    "" in {
-//      val (n, _) = Gen.choose(1,5)
-//        .sample
-//        .run(SimpleRNG(6))
-//      println(n)
-//      assert(n <= 5 && n >= 1)
-//    }
-//  }
-//
-//  "boolean" - {
-//    "" in {
-//      println(Gen.boolean.sample.run(rng))
-//    }
-//  }
+  "choose" - {
+    "" in {
+      val (n, _) = Gen.choose(1,5)
+        .sample
+        .run(Simple(6))
+      assert(n <= 5 && n >= 1)
+    }
+  }
+
+  "boolean" - {
+    "" in {
+      assert(Gen.boolean.sample.run(Simple(1))._1)
+    }
+  }
 
   "unit" - {
     "" in {
-      println(Gen.unit(3).sample.run(SimpleRNG(2)))
+      assert(3 == Gen.unit(3).sample.run(Simple(2))._1)
     }
   }
-//
-//  "listOfN" - {
-//    "" in {
-//      val genList = Gen.liftOfN(5, Gen(State(RNG.nonNegativeInt)))
-//      println(genList.sample.run(rng))
-//    }
-//  }
+
+  "listOfN" - {
+    "" in {
+      val genList = Gen.listOfN(5, Gen(State(RNG.nonNegativeInt)))
+      assert(5 == genList.sample.run(rng)._1.size)
+    }
+  }
+
+  "testing" - {
+    "" in {
+      import Gen._
+      import Prop._
+
+      val smallInt = Gen.choose(-10, 10)
+      val maxProp = forAll(listOf(smallInt)) { ns =>
+        val max = ns.max
+        !ns.exists(_ > max)
+      }
+    }
+  }
 }
