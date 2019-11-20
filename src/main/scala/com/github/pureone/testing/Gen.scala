@@ -9,7 +9,6 @@ import com.github.pureone.parallelism._
 import Gen._
 import Prop._
 
-
 case class Prop(run: (MaxSize, TestCases, RNG) => Result) {
   def &&(p: Prop) = Prop {
     (max, n, rng) => run(max, n, rng) match {
@@ -138,7 +137,7 @@ object Prop {
     )(ES).get
   }
 
-  val S = weighted(
+  val S: Gen[ExecutorService] = weighted(
     choose(1,4).map(Executors.newFixedThreadPool) ->.75,
     Gen.unit(Executors.newCachedThreadPool) ->.25)
 //  def forAllPar[A](g: Gen[A])(f: A => Par[Boolean]): Prop =
@@ -158,7 +157,7 @@ object Prop {
     )
   }
 
-  val pint = Gen.choose(0,10) map Par.unit
+  val pint: Gen[Par[Int]] = Gen.choose(0,10) map Par.unit
   val p5 = forAllPar(pint)(n => equal(Par.map(n)(y => y), n))
 
   val forkProp = Prop.forAllPar(pint2)(i => equal(Par.fork(i), i)) tag "fork"
@@ -187,7 +186,6 @@ case class Gen[+A](sample: State[RNG, A]) {
 
   def **[B](g: Gen[B]): Gen[(A,B)] =
     (this map2 g)((_, _))
-
 }
 
 object Gen {
@@ -214,13 +212,12 @@ object Gen {
   def listOf[A](g: Gen[A]): SGen[List[A]] = SGen(n => listOfN(n, g))
 
   val smallInt: Gen[Int] = Gen.choose(-10,10)
-  val maxProp = forAll(listOf(smallInt)) { l =>
+  val maxProp: Prop = forAll(listOf(smallInt)) { l: List[Int] =>
     val max = l.max
     !l.exists(_ > max)
   }
 
-  def listOf1[A](g: Gen[A]): SGen[List[A]] =
-    SGen(n => g.listOfN(n max 1))
+  def listOf1[A](g: Gen[A]): SGen[List[A]] = SGen(n => g.listOfN(n max 1))
   val maxProp1 = forAll(listOf1(smallInt)) { l =>
     val max = l.max
     !l.exists(_ > max)
@@ -237,13 +234,17 @@ object Gen {
     def unapply[A,B](p: (A,B)) = Some(p)
   }
 
-  val pint2: Gen[Par[Int]] = choose(-100,100)
+  val pint2: Gen[Par[Int]] =
+    choose(-100,100)
     .listOfN(choose(0,20))
-    .map(l =>
-      l.foldLeft(Par.unit(0))((p,i) =>
+    .map((l: List[Int]) =>
+      l.foldLeft(Par.unit(0))((p, i) =>
         Par.fork {
           Par.map2(p, Par.unit(i))(_ + _)
-        }))
+        })
+    )
+
+  val hoge: Long = 3L
 }
 
 case class SGen[+A](g: Int => Gen[A]) {
@@ -261,7 +262,4 @@ case class SGen[+A](g: Int => Gen[A]) {
 
   def **[B](s2: SGen[B]): SGen[(A,B)] =
     SGen(n => apply(n) ** s2(n))
-
 }
-
-
