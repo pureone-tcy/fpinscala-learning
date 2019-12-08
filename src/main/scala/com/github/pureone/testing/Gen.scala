@@ -5,28 +5,28 @@ import com.github.pureone.state._
 import com.github.pureone.testing.Prop._
 
 case class Prop(run: (MaxSize, TestCases, RNG) => Result) {
-  def &&(p: Prop) = Prop {
-    (max, n, rng) => run(max, n, rng) match {
+  def &&(p: Prop) = Prop { (max, n, rng) =>
+    run(max, n, rng) match {
       case Passed | Proved => p.run(max, n, rng)
-      case x => x
+      case x               => x
     }
   }
 
-  def ||(p: Prop) = Prop {
-    (max,n,rng) => run(max,n,rng) match {
+  def ||(p: Prop) = Prop { (max, n, rng) =>
+    run(max, n, rng) match {
       // In case of failure, run the other prop.
-      case Falsified(msg, _) => p.tag(msg).run(max,n,rng)
-      case x => x
+      case Falsified(msg, _) => p.tag(msg).run(max, n, rng)
+      case x                 => x
     }
   }
 
   /* This is rather simplistic - in the event of failure, we simply prepend
    * the given message on a newline in front of the existing message.
    */
-  def tag(msg: String) = Prop {
-    (max,n,rng) => run(max,n,rng) match {
+  def tag(msg: String) = Prop { (max, n, rng) =>
+    run(max, n, rng) match {
       case Falsified(e, c) => Falsified(msg + "\n" + e, c)
-      case x => x
+      case x               => x
     }
   }
 }
@@ -38,8 +38,8 @@ object Prop {
   case object Passed extends Result {
     def isFalsified = false
   }
-  case class Falsified(failure: FailedCase,
-    successes: SuccessCount) extends Result {
+  case class Falsified(failure: FailedCase, successes: SuccessCount)
+      extends Result {
     def isFalsified = true
   }
   case object Proved extends Result {
@@ -59,17 +59,16 @@ object Prop {
       s"generated an exception: ${e.getMessage}\n" +
       s"stack trace:\n ${e.getStackTrace.mkString("\n")}"
 
-
   def randomStream[A](g: Gen[A])(rng: RNG): Stream[A] =
     Stream.unfold(rng)(rng => Some(g.sample.run(rng)))
 
-  def forAll[A](as: Gen[A])(f: A => Boolean): Prop = Prop {
-    (n, rng) => randomStream(as)(rng).zip(Stream.from(0)).take(n).map {
-      case (a, i) => try {
-        if (f(a)) Passed else Falsified(a.toString, i)
-      } catch { case e: Exception => Falsified(buildMsg(a, e), i) }
-    }.find(_.isFalsified).getOrElse(Passed)
-  }
+//  def forAll[A](as: Gen[A])(f: A => Boolean): Prop = Prop {
+//    (n, rng) => randomStream(as)(rng).zip(Stream.from(0)).take(n).map {
+//      case (a, i) => try {
+//        if (f(a)) Passed else Falsified(a.toString, i)
+//      } catch { case e: Exception => Falsified(buildMsg(a, e), i) }
+//    }.find(_.isFalsified).getOrElse(Passed)
+//  }
 }
 
 case class Gen[A](sample: State[RNG, A]) {
@@ -77,7 +76,7 @@ case class Gen[A](sample: State[RNG, A]) {
     Gen(sample.flatMap(a => f(a).sample))
 
   def liftOfN(size: Gen[Int]): Gen[List[A]] =
-    size flatMap(a => this.liftOfN(a))
+    size flatMap (a => this.liftOfN(a))
 
   def liftOfN(size: Int): Gen[List[A]] =
     Gen.liftOfN(size, this)
@@ -101,7 +100,8 @@ object Gen {
 
   def weighted[A](g1: (Gen[A], Double), g2: (Gen[A], Double)): Gen[A] = {
     val g1Threshold = g1._2.abs / (g1._2.abs + g2._2.abs)
-    Gen(State(RNG.double).flatMap(d => if (d < g1Threshold) g1._1.sample else g2._1.sample))
+    Gen(State(RNG.double).flatMap(d =>
+      if (d < g1Threshold) g1._1.sample else g2._1.sample))
   }
 
 }
