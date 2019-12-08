@@ -4,6 +4,11 @@ sealed trait List[+A] {
   import List._
 
   def reverse: List[A] = foldLeft(this, Nil: List[A])((xs, a) => Cons(a, xs))
+
+  def _foldRight[B](z: B)(f: (A, B) => B): B = this match {
+    case Nil => z
+    case Cons(x, xs) => f(x, xs._foldRight(z)(f))
+  }
 }
 case object Nil extends List[Nothing]
 case class Cons[+A](head: A, tail: List[A]) extends List[A]
